@@ -1,0 +1,57 @@
+# =========================
+# Environment & Secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+backend/.venv/
+backend/**/.venv/
+
+# =========================
+# FastAPI / Python tooling
+# =========================
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# =========================
+# Next.js
+# =========================
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+Desktop.ini
+# =========================
+# Local working / backup files
+# =========================
+frontend/calendar-source.txt
+frontend/calendar-view-full.txt
+frontend/tasks-source.txt
+frontend/tasks-view-full.txt
+frontend/components/dashboard/dashboard-view.backup.tsx
