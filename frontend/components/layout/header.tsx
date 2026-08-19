@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
     Activity,
     Bell,
@@ -64,7 +65,83 @@ const navigation = [
     },
 ];
 
+type CurrentUser = {
+    name: string;
+    email?: string;
+};
+
+function getInitials(name: string): string {
+    const parts = name
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+
+    if (parts.length === 0) {
+        return "U";
+    }
+
+    if (parts.length === 1) {
+        return parts[0].slice(0, 1).toUpperCase();
+    }
+
+    return (
+        parts[0].slice(0, 1) +
+        parts[parts.length - 1].slice(0, 1)
+    ).toUpperCase();
+}
+
 export function Header() {
+    const [user, setUser] = useState<CurrentUser | null>(null);
+
+    useEffect(() => {
+        async function loadCurrentUser() {
+            try {
+                const token = localStorage.getItem(
+                    "life_progress_token",
+                );
+
+                if (!token) {
+                    return;
+                }
+
+                const apiUrl =
+                    process.env.NEXT_PUBLIC_API_URL ??
+                    "http://127.0.0.1:8000";
+
+                const response = await fetch(
+                    `${apiUrl}/api/v1/auth/me`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                    },
+                );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const data = await response.json();
+
+                setUser({
+                    name: data.name ?? "Your Profile",
+                    email: data.email,
+                });
+            } catch {
+                // Keep the existing header usable even if
+                // the user information request fails.
+            }
+        }
+
+        loadCurrentUser();
+    }, []);
+
+    const displayName = user?.name ?? "Your Profile";
+    const initials =
+        user?.name ? getInitials(user.name) : "SG";
+
     return (
         <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:px-6">
             <div className="lg:hidden">
@@ -82,7 +159,10 @@ export function Header() {
                         <Menu className="size-5" />
                     </SheetTrigger>
 
-                    <SheetContent side="left" className="w-72 p-0">
+                    <SheetContent
+                        side="left"
+                        className="w-72 p-0"
+                    >
                         <SheetHeader className="border-b px-5 py-5 text-left">
                             <SheetTitle className="flex items-center gap-2">
                                 <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -99,26 +179,39 @@ export function Header() {
                         <div className="overflow-y-auto px-4 py-5">
                             <div className="space-y-6">
                                 {navigation.map((group) => (
-                                    <section key={group.section}>
+                                    <section
+                                        key={group.section}
+                                    >
                                         <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                                             {group.section}
                                         </p>
 
                                         <nav className="space-y-1">
-                                            {group.items.map((item) => {
-                                                const Icon = item.icon;
+                                            {group.items.map(
+                                                (item) => {
+                                                    const Icon =
+                                                        item.icon;
 
-                                                return (
-                                                    <Link
-                                                        key={item.href}
-                                                        href={item.href}
-                                                        className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                                                    >
-                                                        <Icon className="size-4" />
-                                                        <span>{item.label}</span>
-                                                    </Link>
-                                                );
-                                            })}
+                                                    return (
+                                                        <Link
+                                                            key={
+                                                                item.href
+                                                            }
+                                                            href={
+                                                                item.href
+                                                            }
+                                                            className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                                                        >
+                                                            <Icon className="size-4" />
+                                                            <span>
+                                                                {
+                                                                    item.label
+                                                                }
+                                                            </span>
+                                                        </Link>
+                                                    );
+                                                },
+                                            )}
                                         </nav>
                                     </section>
                                 ))}
@@ -172,11 +265,14 @@ export function Header() {
 
                 <div className="ml-2 hidden items-center gap-2 border-l pl-3 sm:flex">
                     <div className="flex size-8 items-center justify-center rounded-full bg-muted text-xs font-semibold">
-                        SG
+                        {initials}
                     </div>
 
                     <div className="hidden leading-tight xl:block">
-                        <p className="text-xs font-medium">Your Profile</p>
+                        <p className="text-xs font-medium">
+                            {displayName}
+                        </p>
+
                         <p className="text-[11px] text-muted-foreground">
                             Personal account
                         </p>
