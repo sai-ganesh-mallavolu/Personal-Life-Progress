@@ -80,6 +80,15 @@ def login(
     "/me",
     status_code=status.HTTP_204_NO_CONTENT,
 )
+@router.get(
+    "/me",
+    response_model=UserResponse,
+)
+def get_my_account(
+    current_user: User = Depends(get_current_user),
+) -> UserResponse:
+
+    return current_user
 def delete_my_account(
     data: DeleteAccountRequest,
     current_user: User = Depends(get_current_user),
